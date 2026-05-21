@@ -1,0 +1,893 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CyberSafe — Think Before You Click</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --navy: #0f1b2d;
+    --navy-mid: #162236;
+    --navy-card: #1c2e44;
+    --navy-hover: #223350;
+    --green: #00c896;
+    --green-dim: rgba(0,200,150,0.15);
+    --green-glow: rgba(0,200,150,0.35);
+    --white: #f0f6ff;
+    --muted: #5a7a9a;
+    --text: #c8ddf0;
+    --red: #ff4d6a;
+    --orange: #ffaa00;
+    --blue: #4d9fff;
+    --border: rgba(255,255,255,0.07);
+    --radius: 14px;
+    --radius-sm: 8px;
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  html, body { height:100%; background:var(--navy); color:var(--white); font-family:'DM Sans', sans-serif; overflow:hidden; }
+
+  /* ─── SCREENS ─── */
+  .screen { display:none; position:absolute; inset:0; overflow-y:auto; overflow-x:hidden; animation:fadeIn .35s ease; }
+  .screen.active { display:block; }
+  @keyframes fadeIn { from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:translateY(0)} }
+
+  /* ─── NAVBAR ─── */
+  nav {
+    position:sticky; top:0; z-index:100;
+    display:flex; align-items:center; justify-content:space-between;
+    padding:0 40px; height:60px;
+    background:rgba(15,27,45,0.85); backdrop-filter:blur(12px);
+    border-bottom:1px solid var(--border);
+  }
+  .nav-logo { display:flex; align-items:center; gap:10px; font-family:'Syne',sans-serif; font-weight:800; font-size:1.1rem; color:var(--white); cursor:pointer; }
+  .logo-icon { width:32px; height:32px; background:var(--green); border-radius:8px; display:flex; align-items:center; justify-content:center; font-size:16px; }
+  .nav-links { display:flex; gap:32px; }
+  .nav-links a { color:var(--muted); text-decoration:none; font-size:.9rem; font-weight:500; cursor:pointer; transition:color .2s; }
+  .nav-links a:hover, .nav-links a.active { color:var(--green); }
+  .btn-nav { background:var(--green); color:#0a1a10; padding:8px 20px; border-radius:8px; font-weight:700; font-size:.85rem; cursor:pointer; border:none; transition:opacity .2s; }
+  .btn-nav:hover { opacity:.85; }
+
+  /* ─── HERO ─── */
+  .hero { min-height:calc(100vh - 60px); display:grid; grid-template-columns:1fr 1fr; align-items:center; padding:60px 80px; gap:40px; }
+  .hero-tag { display:inline-block; background:var(--green-dim); color:var(--green); border:1px solid var(--green-glow); border-radius:20px; padding:4px 14px; font-size:.78rem; font-weight:600; letter-spacing:.08em; margin-bottom:20px; }
+  .hero h1 { font-family:'Syne',sans-serif; font-size:clamp(2.4rem,4vw,3.6rem); font-weight:800; line-height:1.1; margin-bottom:10px; }
+  .hero h1 span { color:var(--green); }
+  .hero p { color:var(--text); font-size:1rem; line-height:1.7; margin-bottom:32px; max-width:420px; }
+  .hero-btns { display:flex; gap:14px; flex-wrap:wrap; }
+  .btn-primary { background:var(--green); color:#0a1a10; padding:13px 28px; border-radius:10px; font-weight:700; font-size:.95rem; cursor:pointer; border:none; transition:all .2s; display:inline-flex; align-items:center; gap:8px; }
+  .btn-primary:hover { transform:translateY(-2px); box-shadow:0 8px 24px var(--green-glow); }
+  .btn-secondary { background:transparent; color:var(--white); padding:13px 28px; border-radius:10px; font-weight:600; font-size:.95rem; cursor:pointer; border:1.5px solid var(--border); transition:all .2s; }
+  .btn-secondary:hover { border-color:var(--green); color:var(--green); }
+  .hero-shield { display:flex; align-items:center; justify-content:center; }
+  .shield-svg { filter:drop-shadow(0 0 40px var(--green-glow)); animation:float 4s ease-in-out infinite; width:280px; }
+  @keyframes float { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-14px)} }
+  .stats-row { display:grid; grid-template-columns:repeat(3,1fr); gap:16px; padding:0 80px 60px; }
+  .stat-card { background:var(--navy-card); border:1px solid var(--border); border-radius:var(--radius); padding:28px; text-align:center; }
+  .stat-card .num { font-family:'Syne',sans-serif; font-size:2rem; font-weight:800; color:var(--green); }
+  .stat-card .label { color:var(--muted); font-size:.85rem; margin-top:4px; }
+
+  /* ─── SIGN UP ─── */
+  .signup-wrap { min-height:100vh; display:flex; flex-direction:column; align-items:center; justify-content:center; padding:40px 20px; }
+  .signup-logo { text-align:center; margin-bottom:32px; }
+  .signup-logo .logo-icon-big { width:60px; height:60px; background:var(--green); border-radius:16px; display:inline-flex; align-items:center; justify-content:center; font-size:28px; margin-bottom:12px; }
+  .signup-logo h2 { font-family:'Syne',sans-serif; font-size:1.8rem; font-weight:800; }
+  .signup-logo p { color:var(--green); font-size:.8rem; font-weight:600; letter-spacing:.15em; margin-top:4px; }
+  .signup-card { background:var(--navy-card); border:1px solid var(--border); border-radius:20px; padding:36px; width:100%; max-width:440px; }
+  .signup-card h3 { font-family:'Syne',sans-serif; font-size:1.5rem; font-weight:700; margin-bottom:24px; }
+  .input-field { width:100%; background:rgba(255,255,255,0.06); border:1px solid var(--border); border-radius:10px; padding:14px 18px; color:var(--white); font-size:.95rem; font-family:'DM Sans',sans-serif; margin-bottom:12px; outline:none; transition:border .2s; }
+  .input-field:focus { border-color:var(--green); }
+  .input-field::placeholder { color:var(--muted); }
+  .divider { display:flex; align-items:center; gap:12px; margin:16px 0; color:var(--muted); font-size:.85rem; }
+  .divider::before, .divider::after { content:''; flex:1; height:1px; background:var(--border); }
+  .btn-sso { width:100%; background:transparent; border:1.5px solid var(--border); color:var(--white); padding:14px; border-radius:10px; font-size:.95rem; font-weight:600; cursor:pointer; font-family:'DM Sans',sans-serif; transition:border .2s; }
+  .btn-sso:hover { border-color:var(--muted); }
+  .steps-list { margin-top:36px; display:flex; flex-direction:column; gap:12px; width:100%; max-width:440px; }
+  .step-item { background:var(--navy-card); border:1px solid var(--border); border-radius:var(--radius); padding:18px 20px; display:flex; align-items:center; gap:16px; }
+  .step-icon { width:40px; height:40px; background:var(--green-dim); border-radius:10px; display:flex; align-items:center; justify-content:center; flex-shrink:0; color:var(--green); font-size:18px; }
+  .step-item h4 { font-size:.95rem; font-weight:600; margin-bottom:2px; }
+  .step-item p { font-size:.8rem; color:var(--muted); }
+
+  /* ─── DASHBOARD ─── */
+  .dash-wrap { padding:28px 24px 100px; max-width:480px; margin:0 auto; }
+  .dash-top { display:flex; justify-content:space-between; align-items:center; margin-bottom:24px; }
+  .dash-top h2 { font-family:'Syne',sans-serif; font-size:1.3rem; font-weight:700; }
+  .streak-badge { background:var(--navy-card); border:1px solid var(--border); border-radius:20px; padding:6px 14px; font-size:.8rem; font-weight:600; color:var(--orange); display:flex; align-items:center; gap:6px; }
+  .xp-card { background:var(--navy-card); border:1px solid var(--border); border-radius:var(--radius); padding:24px; margin-bottom:16px; }
+  .xp-card .xp-num { font-family:'Syne',sans-serif; font-size:2rem; font-weight:800; color:var(--green); }
+  .xp-card .level { color:var(--muted); font-size:.85rem; margin-bottom:14px; }
+  .progress-bar-wrap { position:relative; height:8px; background:rgba(255,255,255,0.08); border-radius:4px; margin-bottom:6px; overflow:hidden; }
+  .progress-bar-fill { height:100%; background:var(--green); border-radius:4px; transition:width .8s ease; }
+  .progress-labels { display:flex; justify-content:space-between; font-size:.75rem; color:var(--muted); }
+  .mini-stats { display:grid; grid-template-columns:repeat(3,1fr); gap:10px; margin-bottom:24px; }
+  .mini-stat { background:var(--navy-card); border:1px solid var(--border); border-radius:var(--radius-sm); padding:14px; text-align:center; }
+  .mini-stat .val { font-family:'Syne',sans-serif; font-size:1.2rem; font-weight:700; }
+  .mini-stat .lbl { font-size:.72rem; color:var(--muted); margin-top:3px; }
+  .section-title { font-family:'Syne',sans-serif; font-size:1rem; font-weight:700; margin-bottom:14px; }
+  .challenge-card { background:var(--navy-card); border:1px solid var(--border); border-radius:var(--radius); padding:20px; margin-bottom:12px; cursor:pointer; transition:all .2s; position:relative; }
+  .challenge-card:hover { border-color:var(--green); transform:translateX(3px); }
+  .challenge-card .c-icon { width:36px; height:36px; background:var(--green-dim); border-radius:9px; display:flex; align-items:center; justify-content:center; margin-bottom:12px; font-size:17px; }
+  .challenge-card .diff-tag { position:absolute; top:16px; right:16px; padding:3px 10px; border-radius:12px; font-size:.72rem; font-weight:700; letter-spacing:.05em; }
+  .tag-easy { background:rgba(0,200,150,.15); color:var(--green); }
+  .tag-medium { background:rgba(255,170,0,.15); color:var(--orange); }
+  .tag-hard { background:rgba(255,77,106,.15); color:var(--red); }
+  .challenge-card h4 { font-weight:700; font-size:.95rem; margin-bottom:4px; }
+  .challenge-card p { font-size:.8rem; color:var(--muted); margin-bottom:8px; }
+  .challenge-card .xp-reward { color:var(--green); font-size:.82rem; font-weight:700; }
+  .leaderboard-preview { background:var(--navy-card); border:1px solid var(--border); border-radius:var(--radius); overflow:hidden; margin-bottom:20px; }
+  .lb-row { display:flex; align-items:center; padding:14px 18px; gap:14px; border-bottom:1px solid var(--border); transition:background .2s; }
+  .lb-row:last-child { border-bottom:none; }
+  .lb-row.you { background:var(--green-dim); }
+  .lb-rank { width:24px; height:24px; background:rgba(255,255,255,.06); border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:.8rem; font-weight:700; flex-shrink:0; }
+  .lb-row.you .lb-rank { background:var(--green); color:#0a1a10; }
+  .lb-name { flex:1; font-size:.88rem; font-weight:600; }
+  .lb-xp { color:var(--green); font-size:.85rem; font-weight:700; }
+  .lb-link { text-align:center; padding:14px; color:var(--green); font-size:.85rem; font-weight:600; cursor:pointer; }
+
+  /* ─── CHALLENGE ─── */
+  .challenge-wrap { padding:24px; max-width:600px; margin:0 auto 80px; }
+  .challenge-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:24px; }
+  .challenge-header h2 { font-family:'Syne',sans-serif; font-size:1.2rem; font-weight:700; }
+  .timer-badge { background:var(--navy-card); border:1px solid var(--border); border-radius:20px; padding:6px 16px; font-size:.88rem; font-weight:600; display:flex; align-items:center; gap:7px; }
+  .timer-badge.urgent { border-color:var(--red); color:var(--red); }
+  .email-card { background:var(--navy-card); border:1px solid var(--border); border-radius:var(--radius); overflow:hidden; margin-bottom:24px; }
+  .email-header { padding:18px 20px; border-bottom:1px solid var(--border); }
+  .email-meta { display:flex; flex-direction:column; gap:4px; font-size:.85rem; }
+  .email-meta span { color:var(--muted); }
+  .email-meta a { color:var(--red); }
+  .email-subject { padding:16px 20px; border-bottom:1px solid var(--border); }
+  .email-subject .lbl { font-size:.72rem; color:var(--muted); letter-spacing:.1em; margin-bottom:6px; }
+  .email-subject h3 { font-size:1rem; font-weight:700; }
+  .email-body { padding:20px; font-size:.88rem; line-height:1.8; color:var(--text); }
+  .email-body .danger { color:var(--red); font-weight:700; }
+  .email-body .link { color:var(--blue); text-decoration:underline; cursor:pointer; }
+  .attachment { display:inline-flex; align-items:center; gap:8px; background:rgba(255,255,255,.05); border:1px solid var(--border); border-radius:8px; padding:8px 14px; font-size:.82rem; margin-top:14px; cursor:pointer; }
+  .verdict-q { text-align:center; color:var(--muted); font-size:.9rem; margin-bottom:16px; }
+  .verdict-btns { display:grid; grid-template-columns:1fr 1fr; gap:14px; }
+  .btn-safe { background:var(--green); color:#0a1a10; border:none; border-radius:12px; padding:17px; font-size:.95rem; font-weight:700; cursor:pointer; font-family:'DM Sans',sans-serif; transition:all .2s; }
+  .btn-safe:hover { opacity:.85; }
+  .btn-threat { background:var(--red); color:#fff; border:none; border-radius:12px; padding:17px; font-size:.95rem; font-weight:700; cursor:pointer; font-family:'DM Sans',sans-serif; transition:all .2s; }
+  .btn-threat:hover { opacity:.85; }
+  .result-overlay { display:none; background:var(--navy-card); border:1px solid var(--green); border-radius:var(--radius); padding:28px; margin-top:20px; text-align:center; animation:fadeIn .3s ease; }
+  .result-overlay.show { display:block; }
+  .result-overlay.wrong { border-color:var(--red); }
+  .result-icon { font-size:2.5rem; margin-bottom:10px; }
+  .result-overlay h3 { font-family:'Syne',sans-serif; font-size:1.2rem; font-weight:700; margin-bottom:8px; }
+  .result-overlay p { color:var(--text); font-size:.88rem; line-height:1.7; margin-bottom:18px; }
+  .result-xp { color:var(--green); font-size:1rem; font-weight:700; margin-bottom:16px; }
+
+  /* ─── THREAT FEED ─── */
+  .feed-wrap { padding:32px 40px 60px; }
+  .feed-header { margin-bottom:32px; }
+  .feed-meta { display:flex; align-items:center; gap:8px; font-size:.78rem; color:var(--green); font-weight:600; letter-spacing:.1em; margin-bottom:14px; }
+  .feed-header h1 { font-family:'Syne',sans-serif; font-size:2.2rem; font-weight:800; margin-bottom:14px; }
+  .feed-pills { display:flex; gap:10px; flex-wrap:wrap; }
+  .pill { padding:5px 14px; border-radius:20px; font-size:.78rem; font-weight:600; }
+  .pill-green { background:var(--green-dim); color:var(--green); border:1px solid var(--green-glow); }
+  .pill-orange { background:rgba(255,170,0,.12); color:var(--orange); border:1px solid rgba(255,170,0,.3); }
+  .pill-muted { background:rgba(255,255,255,.05); color:var(--muted); border:1px solid var(--border); }
+  .pill-au { background:rgba(77,159,255,.12); color:var(--blue); border:1px solid rgba(77,159,255,.3); }
+  .feed-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:18px; }
+  .feed-card { background:var(--navy-card); border:1px solid var(--border); border-radius:var(--radius); padding:22px; cursor:pointer; transition:all .25s; }
+  .feed-card:hover { border-color:var(--green); transform:translateY(-3px); }
+  .feed-card-top { display:flex; align-items:center; justify-content:space-between; margin-bottom:14px; }
+  .feed-card-icon { width:36px; height:36px; background:var(--green-dim); border-radius:9px; display:flex; align-items:center; justify-content:center; font-size:16px; }
+  .feed-card-tags { display:flex; gap:6px; align-items:center; }
+  .tag { padding:3px 9px; border-radius:10px; font-size:.72rem; font-weight:600; }
+  .tag-type { background:rgba(255,255,255,.06); color:var(--muted); }
+  .feed-card h4 { font-weight:700; font-size:.95rem; margin-bottom:6px; }
+  .feed-card p { font-size:.8rem; color:var(--muted); margin-bottom:14px; line-height:1.6; }
+  .feed-card-foot { display:flex; align-items:center; justify-content:space-between; }
+  .feed-card-foot .time { font-size:.75rem; color:var(--muted); }
+  .feed-card-foot .xp { color:var(--green); font-size:.82rem; font-weight:700; }
+
+  /* ─── LEARNING PATH ─── */
+  .path-wrap { padding:32px 40px 60px; }
+  .path-header { margin-bottom:30px; }
+  .path-header h1 { font-family:'Syne',sans-serif; font-size:2rem; font-weight:800; margin-bottom:8px; }
+  .path-header p { color:var(--text); font-size:.95rem; }
+  .path-header p span { color:var(--green); font-weight:600; }
+  .path-grid { display:grid; grid-template-columns:1fr 1fr; gap:20px; margin-bottom:32px; }
+  .radar-card { background:var(--navy-card); border:1px solid var(--border); border-radius:var(--radius); padding:24px; }
+  .radar-card h3 { font-size:.8rem; font-weight:600; letter-spacing:.1em; color:var(--muted); margin-bottom:18px; }
+  .breakdown-card { background:var(--navy-card); border:1px solid var(--border); border-radius:var(--radius); padding:24px; }
+  .breakdown-card h3 { font-size:.8rem; font-weight:600; letter-spacing:.1em; color:var(--muted); margin-bottom:18px; }
+  .breakdown-row { display:flex; align-items:center; gap:12px; margin-bottom:14px; }
+  .breakdown-row .cat { width:90px; font-size:.82rem; color:var(--text); flex-shrink:0; }
+  .breakdown-row .bar-bg { flex:1; height:8px; background:rgba(255,255,255,.07); border-radius:4px; overflow:hidden; }
+  .breakdown-row .bar { height:100%; border-radius:4px; transition:width 1s ease; }
+  .breakdown-row .pct { width:36px; text-align:right; font-size:.8rem; font-weight:600; color:var(--text); }
+  .rec-title { font-family:'Syne',sans-serif; font-size:1.1rem; font-weight:700; margin-bottom:16px; }
+  .rec-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:16px; }
+  .rec-card { background:var(--navy-card); border:1px solid var(--border); border-radius:var(--radius); padding:20px; cursor:pointer; transition:all .2s; }
+  .rec-card:hover { border-color:var(--green); }
+  .struggle-tag { display:inline-block; background:rgba(255,170,0,.12); color:var(--orange); border-radius:10px; padding:3px 10px; font-size:.72rem; font-weight:700; margin-bottom:8px; }
+  .rec-card h4 { font-weight:700; font-size:.92rem; margin-bottom:6px; }
+  .rec-card p { font-size:.78rem; color:var(--muted); margin-bottom:10px; }
+  .rec-card .xp { color:var(--green); font-size:.82rem; font-weight:700; }
+
+  /* ─── ACHIEVEMENTS ─── */
+  .achv-wrap { padding:32px 40px 60px; }
+  .achv-header { margin-bottom:28px; }
+  .achv-header h1 { font-family:'Syne',sans-serif; font-size:2rem; font-weight:800; }
+  .achv-header p { color:var(--muted); font-size:.88rem; margin-top:6px; }
+  .badge-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:16px; }
+  .badge-card { background:var(--navy-card); border:1px solid var(--border); border-radius:var(--radius); padding:24px; text-align:center; transition:all .25s; }
+  .badge-card.earned { cursor:default; }
+  .badge-card.earned:hover { border-color:var(--green); transform:translateY(-3px); }
+  .badge-card.locked { opacity:.6; }
+  .badge-icon-wrap { width:64px; height:64px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:26px; margin:0 auto 14px; }
+  .badge-card h4 { font-weight:700; font-size:.9rem; margin-bottom:4px; }
+  .badge-card p { font-size:.76rem; color:var(--muted); margin-bottom:10px; }
+  .badge-progress { height:4px; background:rgba(255,255,255,.07); border-radius:2px; overflow:hidden; }
+  .badge-progress-fill { height:100%; background:var(--green); border-radius:2px; }
+
+  /* ─── LEADERBOARD ─── */
+  .lb-wrap { padding:28px 24px 100px; max-width:500px; margin:0 auto; }
+  .lb-tabs { display:flex; gap:10px; margin-bottom:24px; }
+  .lb-tab { padding:8px 18px; border-radius:20px; font-size:.85rem; font-weight:600; cursor:pointer; border:1.5px solid var(--border); color:var(--muted); transition:all .2s; }
+  .lb-tab.active { background:var(--green); color:#0a1a10; border-color:var(--green); }
+  .podium { display:flex; align-items:flex-end; justify-content:center; gap:16px; margin-bottom:28px; padding-bottom:10px; }
+  .podium-item { text-align:center; }
+  .podium-item.first { order:2; }
+  .podium-item.second { order:1; }
+  .podium-item.third { order:3; }
+  .podium-avatar { width:50px; height:50px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:1.1rem; font-weight:700; margin:0 auto 8px; }
+  .podium-item.first .podium-avatar { width:62px; height:62px; background:var(--green); color:#0a1a10; font-size:1.3rem; }
+  .podium-item.second .podium-avatar { background:var(--blue); color:#fff; }
+  .podium-item.third .podium-avatar { background:var(--green); color:#0a1a10; }
+  .podium-name { font-size:.8rem; font-weight:600; margin-bottom:2px; }
+  .podium-xp { color:var(--green); font-size:.78rem; font-weight:700; }
+  .podium-place { display:inline-block; background:var(--navy-card); border:1px solid var(--border); border-radius:8px; padding:4px 16px; font-weight:700; font-size:.9rem; margin-top:8px; }
+  .podium-item.first .podium-place { background:var(--green-dim); border-color:var(--green); color:var(--green); }
+  .crown { font-size:1.2rem; margin-bottom:4px; }
+  .lb-table { background:var(--navy-card); border:1px solid var(--border); border-radius:var(--radius); overflow:hidden; }
+  .lb-table-row { display:grid; grid-template-columns:50px 1fr 120px 80px; padding:14px 18px; border-bottom:1px solid var(--border); font-size:.85rem; align-items:center; }
+  .lb-table-row:last-child { border-bottom:none; }
+  .lb-table-row.header { background:rgba(255,255,255,.03); color:var(--muted); font-size:.75rem; letter-spacing:.08em; }
+  .lb-table-row.you-row { background:var(--green-dim); }
+  .lb-you-tag { display:inline-block; background:var(--green); color:#0a1a10; border-radius:8px; padding:1px 8px; font-size:.68rem; font-weight:700; margin-left:6px; }
+
+  /* ─── ADMIN ─── */
+  .admin-layout { display:grid; grid-template-columns:170px 1fr; min-height:100vh; }
+  .admin-sidebar { background:rgba(10,20,35,.6); border-right:1px solid var(--border); padding:24px 0; display:flex; flex-direction:column; }
+  .admin-sidebar .brand { padding:0 20px 24px; font-family:'Syne',sans-serif; font-weight:800; font-size:1rem; display:flex; align-items:center; gap:8px; border-bottom:1px solid var(--border); margin-bottom:12px; }
+  .sidebar-link { display:flex; align-items:center; gap:10px; padding:10px 20px; font-size:.85rem; color:var(--muted); cursor:pointer; transition:all .2s; }
+  .sidebar-link:hover, .sidebar-link.active { color:var(--green); background:var(--green-dim); }
+  .sidebar-link .icon { font-size:14px; }
+  .admin-content { padding:32px; overflow-y:auto; }
+  .admin-content h1 { font-family:'Syne',sans-serif; font-size:1.6rem; font-weight:800; margin-bottom:24px; }
+  .kpi-row { display:grid; grid-template-columns:repeat(4,1fr); gap:16px; margin-bottom:28px; }
+  .kpi-card { background:var(--navy-card); border:1px solid var(--border); border-radius:var(--radius); padding:20px; }
+  .kpi-card .kpi-label { font-size:.75rem; color:var(--muted); font-weight:600; letter-spacing:.08em; margin-bottom:8px; }
+  .kpi-card .kpi-val { font-family:'Syne',sans-serif; font-size:1.8rem; font-weight:800; }
+  .kpi-card .kpi-sub { font-size:.78rem; color:var(--muted); margin-top:4px; }
+  .admin-grid { display:grid; grid-template-columns:1.2fr 1fr; gap:20px; margin-bottom:24px; }
+  .admin-card { background:var(--navy-card); border:1px solid var(--border); border-radius:var(--radius); padding:24px; }
+  .admin-card h3 { font-size:.85rem; font-weight:600; margin-bottom:18px; color:var(--text); }
+  .module-row { display:flex; align-items:center; gap:12px; margin-bottom:14px; font-size:.83rem; }
+  .module-row .name { width:120px; color:var(--text); flex-shrink:0; }
+  .module-row .bar-bg { flex:1; height:7px; background:rgba(255,255,255,.07); border-radius:4px; overflow:hidden; }
+  .module-row .bar { height:100%; border-radius:4px; }
+  .module-row .pct { width:36px; text-align:right; color:var(--text); }
+  .engagement-list { display:flex; flex-direction:column; gap:14px; }
+  .eng-row { display:flex; justify-content:space-between; font-size:.85rem; }
+  .eng-row span:first-child { color:var(--muted); }
+  .eng-row span:last-child { font-weight:700; }
+  .top-cohort { background:var(--green-dim); border:1px solid var(--green-glow); border-radius:10px; padding:16px; margin-top:14px; }
+  .top-cohort .label { font-size:.72rem; color:var(--green); letter-spacing:.1em; font-weight:600; margin-bottom:6px; }
+  .top-cohort .name { font-weight:700; }
+  .top-cohort .pct { font-family:'Syne',sans-serif; font-size:2rem; font-weight:800; color:var(--green); }
+  .table-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:16px; }
+  .btn-export { background:var(--green); color:#0a1a10; padding:8px 18px; border-radius:8px; font-size:.82rem; font-weight:700; cursor:pointer; border:none; }
+  .data-table { width:100%; border-collapse:collapse; font-size:.82rem; }
+  .data-table th { text-align:left; padding:10px 14px; color:var(--muted); font-size:.72rem; letter-spacing:.08em; border-bottom:1px solid var(--border); }
+  .data-table td { padding:12px 14px; border-bottom:1px solid var(--border); }
+  .data-table tr:last-child td { border-bottom:none; }
+  .status-dot { display:inline-block; width:8px; height:8px; border-radius:50%; margin-right:6px; }
+  .status-active { background:var(--green); }
+  .status-risk { background:var(--orange); }
+
+  /* ─── MOBILE NAV ─── */
+  .mobile-nav { display:none; position:fixed; bottom:0; left:0; right:0; z-index:200; background:var(--navy-mid); border-top:1px solid var(--border); padding:8px 0 16px; }
+  .mobile-nav-inner { display:flex; justify-content:space-around; }
+  .mob-nav-item { display:flex; flex-direction:column; align-items:center; gap:4px; cursor:pointer; color:var(--muted); font-size:.65rem; font-weight:600; transition:color .2s; padding:4px 12px; }
+  .mob-nav-item.active { color:var(--green); }
+  .mob-nav-item .mn-icon { font-size:20px; }
+
+  @media (max-width: 768px) {
+    nav { padding:0 18px; }
+    .nav-links { display:none; }
+    .hero { grid-template-columns:1fr; padding:32px 20px; text-align:center; }
+    .hero-shield { display:none; }
+    .hero-btns { justify-content:center; }
+    .stats-row { padding:0 20px 80px; }
+    .feed-wrap, .path-wrap, .achv-wrap { padding:24px 18px 80px; }
+    .feed-grid, .path-grid, .rec-grid { grid-template-columns:1fr; }
+    .badge-grid { grid-template-columns:repeat(2,1fr); }
+    .admin-layout { grid-template-columns:1fr; }
+    .admin-sidebar { display:none; }
+    .kpi-row { grid-template-columns:repeat(2,1fr); }
+    .admin-grid { grid-template-columns:1fr; }
+    .mobile-nav { display:block; }
+    .btn-nav { display:none; }
+  }
+</style>
+</head>
+<body>
+
+<!-- LANDING PAGE -->
+<div class="screen active" id="screen-landing">
+  <nav>
+    <div class="nav-logo" onclick="goTo('landing')">
+      <div class="logo-icon">🛡</div>
+      CyberSafe
+    </div>
+    <div class="nav-links">
+      <a onclick="goTo('landing')" class="active">Home</a>
+      <a onclick="goTo('feed')">Challenges</a>
+      <a onclick="goTo('leaderboard')">Leaderboard</a>
+      <a onclick="goTo('signup')">Sign Up</a>
+    </div>
+    <button class="btn-nav" onclick="goTo('dashboard')">Launch App →</button>
+  </nav>
+  <div class="hero">
+    <div>
+      <div class="hero-tag">🔒 GAMIFIED CYBERSECURITY TRAINING</div>
+      <h1>Don't Click This.<br><span>(Seriously, Don't.)</span></h1>
+      <p>Just kidding, this one's safe. Unlike that Netflix email you almost fell for. Learn to spot real threats through bite-sized challenges, XP rewards, and daily missions.</p>
+      <div class="hero-btns">
+        <button class="btn-primary" onclick="goTo('signup')">Get Started →</button>
+        <button class="btn-secondary" onclick="goTo('challenge')">Try a Challenge</button>
+      </div>
+    </div>
+    <div class="hero-shield">
+      <svg class="shield-svg" viewBox="0 0 200 240" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <linearGradient id="sg" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0%" stop-color="#00c896"/>
+            <stop offset="100%" stop-color="#009e78"/>
+          </linearGradient>
+        </defs>
+        <path d="M100 10 L180 45 L180 120 Q180 180 100 220 Q20 180 20 120 L20 45 Z" fill="url(#sg)" opacity=".9"/>
+        <path d="M100 28 L165 58 L165 118 Q165 165 100 200 Q35 165 35 118 L35 58 Z" fill="none" stroke="rgba(255,255,255,0.15)" stroke-width="2"/>
+        <path d="M72 118 L90 136 L132 94" stroke="#0a1a10" stroke-width="10" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+      </svg>
+    </div>
+  </div>
+  <div class="stats-row">
+    <div class="stat-card"><div class="num">50k+</div><div class="label">Learners</div></div>
+    <div class="stat-card"><div class="num">120</div><div class="label">Universities</div></div>
+    <div class="stat-card"><div class="num">94%</div><div class="label">Spot Rate</div></div>
+  </div>
+</div>
+
+<!-- SIGN UP -->
+<div class="screen" id="screen-signup">
+  <div class="signup-wrap">
+    <div class="signup-logo">
+      <div class="logo-icon-big">🛡</div>
+      <h2>CyberSafe</h2>
+      <p>THINK BEFORE YOU CLICK</p>
+    </div>
+    <div class="signup-card">
+      <h3>Join CyberSafe</h3>
+      <input class="input-field" type="email" placeholder="Enter your university email">
+      <button class="btn-primary" style="width:100%;justify-content:center;" onclick="goTo('dashboard')">Get Started →</button>
+      <div class="divider">or</div>
+      <button class="btn-sso" onclick="goTo('dashboard')">Continue with SSO</button>
+    </div>
+    <div style="margin-top:28px;width:100%;max-width:440px">
+      <div style="font-family:'Syne',sans-serif;font-size:1rem;font-weight:700;margin-bottom:14px;">3 Steps to Start</div>
+      <div class="steps-list">
+        <div class="step-item"><div class="step-icon">✓</div><div><h4>Sign Up</h4><p>Use your university email to join your cohort</p></div></div>
+        <div class="step-item"><div class="step-icon">🛡</div><div><h4>Complete Challenges</h4><p>Spot phishing, scams, and threats in realistic scenarios</p></div></div>
+        <div class="step-item"><div class="step-icon">⭐</div><div><h4>Earn Badges</h4><p>Climb the leaderboard and unlock achievements</p></div></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- DASHBOARD -->
+<div class="screen" id="screen-dashboard">
+  <div class="dash-wrap">
+    <div class="dash-top">
+      <h2>Welcome back, Alex 🔥</h2>
+      <div class="streak-badge">🔥 14-day streak</div>
+    </div>
+    <div class="xp-card">
+      <div class="xp-num">9,870 XP</div>
+      <div class="level">Level 9</div>
+      <div class="progress-bar-wrap"><div class="progress-bar-fill" style="width:88%"></div></div>
+      <div class="progress-labels"><span>1,130 XP to next level</span><span>→ Level 10</span></div>
+    </div>
+    <div class="mini-stats">
+      <div class="mini-stat"><div class="val">24/38</div><div class="lbl">Modules</div></div>
+      <div class="mini-stat"><div class="val">7</div><div class="lbl">Badges</div></div>
+      <div class="mini-stat"><div class="val">187</div><div class="lbl">Threats</div></div>
+    </div>
+    <div class="section-title">Today's Challenges</div>
+    <div class="challenge-card" onclick="goTo('challenge')">
+      <div class="c-icon">✉️</div>
+      <span class="diff-tag tag-easy">EASY</span>
+      <h4>Spot the Phish</h4>
+      <p>Identify suspicious emails in your inbox</p>
+      <div class="xp-reward">+150 XP</div>
+    </div>
+    <div class="challenge-card" onclick="goTo('challenge')">
+      <div class="c-icon">🔒</div>
+      <span class="diff-tag tag-medium">MEDIUM</span>
+      <h4>Password Forge</h4>
+      <p>Build unbreakable passwords under pressure</p>
+      <div class="xp-reward">+150 XP</div>
+    </div>
+    <div class="challenge-card" onclick="goTo('challenge')">
+      <div class="c-icon">👁</div>
+      <span class="diff-tag tag-hard">HARD</span>
+      <h4>Social Decoy</h4>
+      <p>Detect manipulation in DMs and calls</p>
+      <div class="xp-reward">+150 XP</div>
+    </div>
+    <div class="section-title" style="margin-top:24px">Leaderboard Preview</div>
+    <div class="leaderboard-preview">
+      <div class="lb-row"><div class="lb-rank">1</div><div class="lb-name">Maya.S</div><div class="lb-xp">12,450 XP</div></div>
+      <div class="lb-row"><div class="lb-rank">2</div><div class="lb-name">Joxx.A</div><div class="lb-xp">10,210 XP</div></div>
+      <div class="lb-row you"><div class="lb-rank">3</div><div class="lb-name">Alex_C <span style="background:var(--green);color:#0a1a10;border-radius:6px;padding:1px 7px;font-size:.7rem;font-weight:700;margin-left:4px">YOU</span></div><div class="lb-xp">9,870 XP</div></div>
+    </div>
+    <div class="lb-link" onclick="goTo('leaderboard')">See Full Leaderboard →</div>
+  </div>
+  <div class="mobile-nav">
+    <div class="mobile-nav-inner">
+      <div class="mob-nav-item active" onclick="goTo('dashboard')"><div class="mn-icon">🏠</div>Home</div>
+      <div class="mob-nav-item" onclick="goTo('path')"><div class="mn-icon">📖</div>Learn</div>
+      <div class="mob-nav-item" onclick="goTo('challenge')"><div class="mn-icon">▶</div>Play</div>
+      <div class="mob-nav-item" onclick="goTo('leaderboard')"><div class="mn-icon">🏆</div>Rank</div>
+      <div class="mob-nav-item" onclick="goTo('profile')"><div class="mn-icon">👤</div>Profile</div>
+    </div>
+  </div>
+</div>
+
+<!-- ACTIVE CHALLENGE -->
+<div class="screen" id="screen-challenge">
+  <div class="challenge-wrap">
+    <div class="challenge-header">
+      <h2>Phishing Detection</h2>
+      <div class="timer-badge" id="timer-badge">⏱ <span id="timer-val">01:45</span></div>
+    </div>
+    <div class="email-card">
+      <div class="email-header">
+        <div class="email-meta">
+          <span>From: <strong>UniAdmin</strong> <a>urgent@verifyme.net</a></span>
+          <span>To: You &lt;student@deakin.edu.au&gt;</span>
+        </div>
+      </div>
+      <div class="email-subject">
+        <div class="lbl">SUBJECT</div>
+        <h3>Action Required: Verify Your University Credentials Immediately</h3>
+      </div>
+      <div class="email-body">
+        <p>Dear Student,</p><br>
+        <p>Our records show your account will be <span class="danger">SUSPENDED</span> within 24 hours if you do not verify your credentials. Failure to act will result in permanent loss of access to all university services.</p><br>
+        <p>Please confirm now: <span class="link">http://deakin-verify.ru/login</span></p><br>
+        <div class="attachment">📄 verification_form.html</div>
+      </div>
+    </div>
+    <div class="verdict-q">Is this email safe or a threat?</div>
+    <div class="verdict-btns">
+      <button class="btn-safe" onclick="verdict('safe')">✓ This is Safe</button>
+      <button class="btn-threat" onclick="verdict('threat')">⚠ This is a Threat</button>
+    </div>
+    <div class="result-overlay" id="result-correct">
+      <div class="result-icon">🎉</div>
+      <h3>Correct! That's a Phishing Email</h3>
+      <p>Red flags: Sender domain <strong>verifyme.net</strong> (not deakin.edu.au), <strong>.ru</strong> login URL, urgency tactics, and an HTML attachment. Real universities never send credential verification requests this way.</p>
+      <div class="result-xp">+150 XP Earned!</div>
+      <button class="btn-primary" onclick="goTo('dashboard')" style="margin:0 auto">← Back to Dashboard</button>
+    </div>
+    <div class="result-overlay wrong" id="result-wrong">
+      <div class="result-icon">❌</div>
+      <h3>Not Quite — This Was a Threat</h3>
+      <p>Key red flags: Sender domain <strong>verifyme.net</strong>, <strong>.ru</strong> URL, suspension urgency, and HTML attachment. Review the Phishing 101 module to sharpen your detection skills.</p>
+      <button class="btn-primary" onclick="goTo('dashboard')" style="margin:0 auto">← Back to Dashboard</button>
+    </div>
+  </div>
+  <div class="mobile-nav">
+    <div class="mobile-nav-inner">
+      <div class="mob-nav-item" onclick="goTo('dashboard')"><div class="mn-icon">🏠</div>Home</div>
+      <div class="mob-nav-item" onclick="goTo('path')"><div class="mn-icon">📖</div>Learn</div>
+      <div class="mob-nav-item active" onclick="goTo('challenge')"><div class="mn-icon">▶</div>Play</div>
+      <div class="mob-nav-item" onclick="goTo('leaderboard')"><div class="mn-icon">🏆</div>Rank</div>
+      <div class="mob-nav-item" onclick="goTo('profile')"><div class="mn-icon">👤</div>Profile</div>
+    </div>
+  </div>
+</div>
+
+<!-- LIVE THREAT FEED -->
+<div class="screen" id="screen-feed">
+  <nav>
+    <div class="nav-logo" onclick="goTo('landing')"><div class="logo-icon">🛡</div>CyberSafe</div>
+    <div class="nav-links">
+      <a onclick="goTo('landing')">Home</a>
+      <a onclick="goTo('feed')" class="active">Challenges</a>
+      <a onclick="goTo('leaderboard')">Leaderboard</a>
+      <a onclick="goTo('achievements')">Badges</a>
+      <a onclick="goTo('admin')" style="color:var(--orange)">Admin ↗</a>
+    </div>
+    <button class="btn-nav" onclick="goTo('dashboard')">Dashboard →</button>
+  </nav>
+  <div class="feed-wrap">
+    <div class="feed-header">
+      <div class="feed-meta">🟢 // LIVE THREAT FEED</div>
+      <h1>What's New</h1>
+      <div class="feed-pills">
+        <span class="pill pill-green">3 NEW THIS WEEK</span>
+        <span class="pill pill-orange">2 TRENDING</span>
+        <span class="pill pill-muted">UPDATED JUST NOW</span>
+      </div>
+    </div>
+    <div class="feed-grid">
+      <div class="feed-card" onclick="goTo('challenge')">
+        <div class="feed-card-top"><div class="feed-card-icon">✉️</div><div class="feed-card-tags"><span class="tag tag-type">Phishing</span><span class="tag tag-medium">MEDIUM</span><span class="tag" style="background:rgba(77,159,255,.1);color:var(--blue)">AU</span></div></div>
+        <h4>ATO Refund Trap</h4><p>Fake Australian Tax Office refund email with a malicious payload</p>
+        <div class="feed-card-foot"><span class="time">Added 2h ago</span><span class="xp">+200 XP</span></div>
+      </div>
+      <div class="feed-card" onclick="goTo('challenge')">
+        <div class="feed-card-top"><div class="feed-card-icon">✉️</div><div class="feed-card-tags"><span class="tag tag-type">Social</span><span class="tag tag-hard">HARD</span><span class="tag" style="background:rgba(77,159,255,.1);color:var(--blue)">AU</span></div></div>
+        <h4>MyGov 2FA Intercept</h4><p>Attacker calls posing as MyGov support to capture your 2FA code</p>
+        <div class="feed-card-foot"><span class="time">Added 1d ago</span><span class="xp">+200 XP</span></div>
+      </div>
+      <div class="feed-card" onclick="goTo('challenge')">
+        <div class="feed-card-top"><div class="feed-card-icon">📡</div><div class="feed-card-tags"><span class="tag tag-type">Network</span><span class="tag tag-medium">MEDIUM</span><span class="tag" style="background:rgba(77,159,255,.1);color:var(--blue)">AU</span></div></div>
+        <h4>Campus Evil Twin</h4><p>Rogue Wi-Fi mimicking your university SSID near the library</p>
+        <div class="feed-card-foot"><span class="time">Added 3d ago</span><span class="xp">+200 XP</span></div>
+      </div>
+      <div class="feed-card" onclick="goTo('challenge')">
+        <div class="feed-card-top"><div class="feed-card-icon">💼</div><div class="feed-card-tags"><span class="tag tag-type">Phishing</span><span class="tag tag-easy">EASY</span></div></div>
+        <h4>LinkedIn Job Scam</h4><p>Fake recruiter offering grad roles in exchange for verification</p>
+        <div class="feed-card-foot"><span class="time">Added 4d ago</span><span class="xp">+200 XP</span></div>
+      </div>
+      <div class="feed-card" onclick="goTo('challenge')">
+        <div class="feed-card-top"><div class="feed-card-icon">🏦</div><div class="feed-card-tags"><span class="tag tag-type">Phishing</span><span class="tag tag-medium">MEDIUM</span></div></div>
+        <h4>Fake Bank Alert</h4><p>SMS claiming suspicious transaction, link goes to a clone site</p>
+        <div class="feed-card-foot"><span class="time">Added 5d ago</span><span class="xp">+200 XP</span></div>
+      </div>
+      <div class="feed-card" onclick="goTo('challenge')">
+        <div class="feed-card-top"><div class="feed-card-icon">🔑</div><div class="feed-card-tags"><span class="tag tag-type">Phishing</span><span class="tag tag-hard">HARD</span></div></div>
+        <h4>Password Reset Trap</h4><p>Spoofed identity provider asking you to re-authenticate now</p>
+        <div class="feed-card-foot"><span class="time">Added 1w ago</span><span class="xp">+200 XP</span></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- LEARNING PATH -->
+<div class="screen" id="screen-path">
+  <nav>
+    <div class="nav-logo" onclick="goTo('landing')"><div class="logo-icon">🛡</div>CyberSafe</div>
+    <div class="nav-links">
+      <a onclick="goTo('dashboard')">Dashboard</a>
+      <a onclick="goTo('feed')">Challenges</a>
+      <a onclick="goTo('leaderboard')">Leaderboard</a>
+      <a onclick="goTo('achievements')">Badges</a>
+      <a onclick="goTo('admin')" style="color:var(--orange)">Admin ↗</a>
+    </div>
+    <button class="btn-nav" onclick="goTo('dashboard')">Dashboard →</button>
+  </nav>
+  <div class="path-wrap">
+    <div class="path-header">
+      <h1>Your Path</h1>
+      <p>Your weakest area is <span>Social Engineering</span> — here's what to do next.</p>
+    </div>
+    <div class="path-grid">
+      <div class="radar-card">
+        <h3>THREAT COVERAGE</h3>
+        <svg viewBox="0 0 260 240" width="100%" style="max-width:260px;display:block;margin:0 auto">
+          <defs><linearGradient id="rg" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#00c896" stop-opacity=".5"/><stop offset="100%" stop-color="#00c896" stop-opacity=".1"/></linearGradient></defs>
+          <!-- Grid -->
+          <polygon points="130,20 210,65 210,155 130,200 50,155 50,65" fill="none" stroke="rgba(255,255,255,.08)" stroke-width="1"/>
+          <polygon points="130,50 190,82 190,138 130,170 70,138 70,82" fill="none" stroke="rgba(255,255,255,.08)" stroke-width="1"/>
+          <polygon points="130,80 170,100 170,120 130,140 90,120 90,100" fill="none" stroke="rgba(255,255,255,.08)" stroke-width="1"/>
+          <!-- Axes -->
+          <line x1="130" y1="20" x2="130" y2="200" stroke="rgba(255,255,255,.06)" stroke-width="1"/>
+          <line x1="50" y1="65" x2="210" y2="155" stroke="rgba(255,255,255,.06)" stroke-width="1"/>
+          <line x1="210" y1="65" x2="50" y2="155" stroke="rgba(255,255,255,.06)" stroke-width="1"/>
+          <!-- Data (Phishing82,Passwords71,Privacy68,SocialEng34,Identity55,Malware61) -->
+          <polygon points="130,34 196,74 196,136 130,172 85,131 84,88" fill="url(#rg)" stroke="#00c896" stroke-width="2"/>
+          <!-- Labels -->
+          <text x="130" y="14" text-anchor="middle" fill="#8aabb5" font-size="11" font-family="DM Sans">Phishing</text>
+          <text x="218" y="62" text-anchor="start" fill="#8aabb5" font-size="11" font-family="DM Sans">Passwords</text>
+          <text x="218" y="162" text-anchor="start" fill="#8aabb5" font-size="11" font-family="DM Sans">Privacy</text>
+          <text x="130" y="216" text-anchor="middle" fill="#8aabb5" font-size="11" font-family="DM Sans">Social Eng.</text>
+          <text x="42" y="162" text-anchor="end" fill="#8aabb5" font-size="11" font-family="DM Sans">Identity</text>
+          <text x="42" y="62" text-anchor="end" fill="#8aabb5" font-size="11" font-family="DM Sans">Malware</text>
+        </svg>
+      </div>
+      <div class="breakdown-card">
+        <h3>BREAKDOWN</h3>
+        <div class="breakdown-row"><span class="cat">Phishing</span><div class="bar-bg"><div class="bar" style="width:82%;background:var(--green)"></div></div><span class="pct">82%</span></div>
+        <div class="breakdown-row"><span class="cat">Passwords</span><div class="bar-bg"><div class="bar" style="width:71%;background:var(--blue)"></div></div><span class="pct">71%</span></div>
+        <div class="breakdown-row"><span class="cat">Privacy</span><div class="bar-bg"><div class="bar" style="width:68%;background:var(--blue)"></div></div><span class="pct">68%</span></div>
+        <div class="breakdown-row"><span class="cat">Social Eng.</span><div class="bar-bg"><div class="bar" style="width:34%;background:var(--orange)"></div></div><span class="pct">34%</span></div>
+        <div class="breakdown-row"><span class="cat">Identity Theft</span><div class="bar-bg"><div class="bar" style="width:55%;background:var(--blue)"></div></div><span class="pct">55%</span></div>
+        <div class="breakdown-row"><span class="cat">Malware</span><div class="bar-bg"><div class="bar" style="width:61%;background:var(--blue)"></div></div><span class="pct">61%</span></div>
+      </div>
+    </div>
+    <div class="rec-title">Recommended for You</div>
+    <div class="rec-grid">
+      <div class="rec-card" onclick="goTo('challenge')"><div class="struggle-tag">YOU STRUGGLED HERE</div><div class="diff-tag tag-medium" style="position:static;display:inline-block;margin-bottom:8px">MEDIUM</div><h4>Pretext Caller</h4><p>Spot social engineering on a fake IT support call</p><div class="xp">+200 XP</div></div>
+      <div class="rec-card" onclick="goTo('challenge')"><div class="struggle-tag">YOU STRUGGLED HERE</div><div class="diff-tag tag-hard" style="position:static;display:inline-block;margin-bottom:8px">HARD</div><h4>DM Decoy</h4><p>Resist persuasion tactics in chat conversations</p><div class="xp">+250 XP</div></div>
+      <div class="rec-card" onclick="goTo('challenge')"><div class="struggle-tag">YOU STRUGGLED HERE</div><div class="diff-tag tag-medium" style="position:static;display:inline-block;margin-bottom:8px">MEDIUM</div><h4>Tailgate Trap</h4><p>Identify physical social engineering attempts</p><div class="xp">+200 XP</div></div>
+    </div>
+  </div>
+  <div class="mobile-nav">
+    <div class="mobile-nav-inner">
+      <div class="mob-nav-item" onclick="goTo('dashboard')"><div class="mn-icon">🏠</div>Home</div>
+      <div class="mob-nav-item active"><div class="mn-icon">📖</div>Learn</div>
+      <div class="mob-nav-item" onclick="goTo('challenge')"><div class="mn-icon">▶</div>Play</div>
+      <div class="mob-nav-item" onclick="goTo('leaderboard')"><div class="mn-icon">🏆</div>Rank</div>
+      <div class="mob-nav-item" onclick="goTo('profile')"><div class="mn-icon">👤</div>Profile</div>
+    </div>
+  </div>
+</div>
+
+<!-- ACHIEVEMENTS -->
+<div class="screen" id="screen-achievements">
+  <nav>
+    <div class="nav-logo" onclick="goTo('landing')"><div class="logo-icon">🛡</div>CyberSafe</div>
+    <div class="nav-links">
+      <a onclick="goTo('dashboard')">Dashboard</a>
+      <a onclick="goTo('feed')">Challenges</a>
+      <a onclick="goTo('leaderboard')">Leaderboard</a>
+      <a onclick="goTo('achievements')" class="active">Badges</a>
+      <a onclick="goTo('admin')" style="color:var(--orange)">Admin ↗</a>
+    </div>
+    <button class="btn-nav" onclick="goTo('dashboard')">Dashboard →</button>
+  </nav>
+  <div class="achv-wrap">
+    <div class="achv-header"><h1>Achievements</h1><p>7 of 12 badges earned</p></div>
+    <div class="badge-grid">
+      <div class="badge-card earned"><div class="badge-icon-wrap" style="background:rgba(77,120,255,.2)">🛡</div><h4>First Login</h4><p>Welcome aboard</p></div>
+      <div class="badge-card earned"><div class="badge-icon-wrap" style="background:var(--green-dim)">🎣</div><h4>Phishing Detector</h4><p>Caught 50 phish</p></div>
+      <div class="badge-card earned"><div class="badge-icon-wrap" style="background:rgba(255,120,0,.2)">🔥</div><h4>Streak Master</h4><p>14-day streak</p></div>
+      <div class="badge-card earned"><div class="badge-icon-wrap" style="background:rgba(150,80,255,.2)">🛡</div><h4>Social Shield</h4><p>Resist manipulation</p></div>
+      <div class="badge-card earned"><div class="badge-icon-wrap" style="background:var(--green-dim)">👁</div><h4>Eagle Eye</h4><p>100% accuracy run</p></div>
+      <div class="badge-card earned"><div class="badge-icon-wrap" style="background:rgba(0,180,100,.2)">🐛</div><h4>Bug Bounty</h4><p>Hunt malware</p></div>
+      <div class="badge-card locked"><div class="badge-icon-wrap" style="background:rgba(255,255,255,.05)">🔒</div><h4>Ghost Mode</h4><p>40% to unlock</p><div class="badge-progress"><div class="badge-progress-fill" style="width:40%"></div></div></div>
+      <div class="badge-card locked"><div class="badge-icon-wrap" style="background:rgba(255,255,255,.05)">🔒</div><h4>Speed Demon</h4><p>22% to unlock</p><div class="badge-progress"><div class="badge-progress-fill" style="width:22%"></div></div></div>
+      <div class="badge-card locked"><div class="badge-icon-wrap" style="background:rgba(255,255,255,.05)">🔒</div><h4>Dark Web Defender</h4><p>15% to unlock</p><div class="badge-progress"><div class="badge-progress-fill" style="width:15%"></div></div></div>
+      <div class="badge-card locked"><div class="badge-icon-wrap" style="background:rgba(255,255,255,.05)">🔒</div><h4>Ultimate Guardian</h4><p>8% to unlock</p><div class="badge-progress"><div class="badge-progress-fill" style="width:8%"></div></div></div>
+      <div class="badge-card locked"><div class="badge-icon-wrap" style="background:rgba(255,255,255,.05)">🔒</div><h4>Deakin Champion</h4><p>55% to unlock</p><div class="badge-progress"><div class="badge-progress-fill" style="width:55%"></div></div></div>
+      <div class="badge-card locked"><div class="badge-icon-wrap" style="background:rgba(255,255,255,.05)">🔒</div><h4>Global Agent</h4><p>3% to unlock</p><div class="badge-progress"><div class="badge-progress-fill" style="width:3%"></div></div></div>
+    </div>
+  </div>
+  <div class="mobile-nav">
+    <div class="mobile-nav-inner">
+      <div class="mob-nav-item" onclick="goTo('dashboard')"><div class="mn-icon">🏠</div>Home</div>
+      <div class="mob-nav-item" onclick="goTo('path')"><div class="mn-icon">📖</div>Learn</div>
+      <div class="mob-nav-item" onclick="goTo('challenge')"><div class="mn-icon">▶</div>Play</div>
+      <div class="mob-nav-item" onclick="goTo('leaderboard')"><div class="mn-icon">🏆</div>Rank</div>
+      <div class="mob-nav-item active" onclick="goTo('achievements')"><div class="mn-icon">⭐</div>Badges</div>
+    </div>
+  </div>
+</div>
+
+<!-- LEADERBOARD -->
+<div class="screen" id="screen-leaderboard">
+  <div class="lb-wrap">
+    <h2 style="font-family:'Syne',sans-serif;font-size:1.5rem;font-weight:800;margin-bottom:16px">Leaderboard</h2>
+    <div class="lb-tabs">
+      <div class="lb-tab active">Global</div>
+      <div class="lb-tab">My University</div>
+      <div class="lb-tab">Friends</div>
+    </div>
+    <div class="podium">
+      <div class="podium-item second"><div class="podium-avatar" style="background:#4d9fff;color:#fff">J</div><div class="podium-name">Joxx.A</div><div style="font-size:.75rem;color:var(--muted)">Melbourne Uni</div><div class="podium-xp">8,920 XP</div><div class="podium-place">2</div></div>
+      <div class="podium-item first"><div class="crown">👑</div><div class="podium-avatar">M</div><div class="podium-name">Maya.S</div><div style="font-size:.75rem;color:var(--muted)">Top 10% this week</div><div class="podium-xp">12,450 XP</div><div class="podium-place">1</div></div>
+      <div class="podium-item third"><div class="podium-avatar">A</div><div class="podium-name">Alex_C <span style="background:var(--green);color:#0a1a10;border-radius:6px;padding:1px 7px;font-size:.65rem;font-weight:700">YOU</span></div><div style="font-size:.75rem;color:var(--muted)">Deakin</div><div class="podium-xp">9,870 XP</div><div class="podium-place">3</div></div>
+    </div>
+    <div class="lb-table">
+      <div class="lb-table-row header"><span>RANK</span><span>AGENT</span><span>UNIVERSITY</span><span style="text-align:right">XP</span></div>
+      <div class="lb-table-row"><span>1</span><span>Maya.S</span><span>Deakin</span><span style="text-align:right;color:var(--green);font-weight:700">12,450</span></div>
+      <div class="lb-table-row"><span>2</span><span>Joxx.A</span><span>Melbourne Uni</span><span style="text-align:right;color:var(--green);font-weight:700">10,210</span></div>
+      <div class="lb-table-row you-row"><span>3</span><span>Alex_C <span class="lb-you-tag">YOU</span></span><span>Deakin</span><span style="text-align:right;color:var(--green);font-weight:700">9,870</span></div>
+      <div class="lb-table-row"><span>4</span><span>Priya.K</span><span>Monash</span><span style="text-align:right;color:var(--green);font-weight:700">9,540</span></div>
+      <div class="lb-table-row"><span>5</span><span>Liam.T</span><span>RMIT</span><span style="text-align:right;color:var(--green);font-weight:700">9,180</span></div>
+      <div class="lb-table-row"><span>6</span><span>Noor.H</span><span>UNSW</span><span style="text-align:right;color:var(--green);font-weight:700">8,720</span></div>
+      <div class="lb-table-row"><span>7</span><span>Riley.O</span><span>Sydney Uni</span><span style="text-align:right;color:var(--green);font-weight:700">8,410</span></div>
+      <div class="lb-table-row"><span>8</span><span>Sam.W</span><span>UTS</span><span style="text-align:right;color:var(--green);font-weight:700">8,100</span></div>
+      <div class="lb-table-row"><span>9</span><span>Devon.Y</span><span>QUT</span><span style="text-align:right;color:var(--green);font-weight:700">7,860</span></div>
+      <div class="lb-table-row"><span>10</span><span>Ella.M</span><span>Adelaide</span><span style="text-align:right;color:var(--green);font-weight:700">7,540</span></div>
+    </div>
+  </div>
+  <div class="mobile-nav">
+    <div class="mobile-nav-inner">
+      <div class="mob-nav-item" onclick="goTo('dashboard')"><div class="mn-icon">🏠</div>Home</div>
+      <div class="mob-nav-item" onclick="goTo('path')"><div class="mn-icon">📖</div>Learn</div>
+      <div class="mob-nav-item" onclick="goTo('challenge')"><div class="mn-icon">▶</div>Play</div>
+      <div class="mob-nav-item active"><div class="mn-icon">🏆</div>Rank</div>
+      <div class="mob-nav-item" onclick="goTo('profile')"><div class="mn-icon">👤</div>Profile</div>
+    </div>
+  </div>
+</div>
+
+<!-- PROFILE -->
+<div class="screen" id="screen-profile">
+  <nav>
+    <div class="nav-logo" onclick="goTo('landing')"><div class="logo-icon">🛡</div>CyberSafe</div>
+    <div class="nav-links">
+      <a onclick="goTo('dashboard')">Dashboard</a>
+      <a onclick="goTo('feed')">Challenges</a>
+      <a onclick="goTo('leaderboard')">Leaderboard</a>
+      <a onclick="goTo('achievements')">Badges</a>
+      <a onclick="goTo('admin')" style="color:var(--orange)">Admin ↗</a>
+    </div>
+  </nav>
+  <div style="max-width:720px;margin:0 auto;padding:32px 24px 100px">
+    <div style="background:var(--navy-card);border:1px solid var(--border);border-radius:var(--radius);padding:28px;margin-bottom:20px;display:flex;align-items:center;gap:20px;flex-wrap:wrap">
+      <div style="width:64px;height:64px;background:var(--green);border-radius:16px;display:flex;align-items:center;justify-content:center;font-size:26px;font-weight:800;color:#0a1a10;flex-shrink:0;position:relative">A<span style="position:absolute;bottom:-4px;right:-4px;background:var(--orange);color:#0a1a10;font-size:.6rem;font-weight:700;border-radius:6px;padding:1px 5px">L8</span></div>
+      <div style="flex:1">
+        <h2 style="font-family:'Syne',sans-serif;font-size:1.3rem;font-weight:800">Alex Chen</h2>
+        <div style="color:var(--muted);font-size:.82rem">alex@mit.edu · MIT '26</div>
+        <div style="display:flex;gap:8px;margin-top:8px;flex-wrap:wrap">
+          <span style="background:var(--green-dim);color:var(--green);border-radius:20px;padding:3px 12px;font-size:.75rem;font-weight:600;border:1px solid var(--green-glow)">Sentinel</span>
+          <span style="background:rgba(255,120,0,.12);color:var(--orange);border-radius:20px;padding:3px 12px;font-size:.75rem;font-weight:600">🔥 14d</span>
+          <span style="background:var(--green-dim);color:var(--green);border-radius:20px;padding:3px 12px;font-size:.75rem;font-weight:600">💎 9,870</span>
+        </div>
+      </div>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:20px">
+      <div style="background:var(--navy-card);border:1px solid var(--border);border-radius:var(--radius);padding:20px;text-align:center"><div style="font-size:.75rem;color:var(--muted);letter-spacing:.08em;margin-bottom:6px">MODULES</div><div style="font-family:'Syne',sans-serif;font-size:1.6rem;font-weight:800">24/38</div></div>
+      <div style="background:var(--navy-card);border:1px solid var(--border);border-radius:var(--radius);padding:20px;text-align:center"><div style="font-size:.75rem;color:var(--muted);letter-spacing:.08em;margin-bottom:6px">THREATS</div><div style="font-family:'Syne',sans-serif;font-size:1.6rem;font-weight:800">187</div></div>
+      <div style="background:var(--navy-card);border:1px solid var(--border);border-radius:var(--radius);padding:20px;text-align:center"><div style="font-size:.75rem;color:var(--muted);letter-spacing:.08em;margin-bottom:6px">ACCURACY</div><div style="font-family:'Syne',sans-serif;font-size:1.6rem;font-weight:800">94%</div></div>
+    </div>
+    <div style="background:linear-gradient(135deg,#1c2e1c,#1a2e1a);border:1px solid rgba(255,170,0,.3);border-radius:var(--radius);padding:24px;margin-bottom:20px;display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap">
+      <div><div style="color:var(--orange);font-size:.75rem;font-weight:600;letter-spacing:.1em;margin-bottom:8px">// PREMIUM</div><h3 style="font-size:1.1rem;font-weight:700;margin-bottom:6px">Unlock advanced challenges + verified certificates</h3><p style="color:var(--muted);font-size:.82rem;line-height:1.6">Personalised paths, deeper red-team scenarios, and a downloadable cert for your CV.</p></div>
+      <button class="btn-primary" style="flex-shrink:0" onclick="goTo('admin')">⬆ Upgrade</button>
+    </div>
+    <div style="background:var(--navy-card);border:1px solid var(--border);border-radius:var(--radius);padding:24px">
+      <h3 style="font-size:.95rem;font-weight:700;margin-bottom:16px">Recent Activity</h3>
+      <div style="display:flex;justify-content:space-between;padding:12px 0;border-bottom:1px solid var(--border);font-size:.85rem"><span>Spotted phishing email</span><span style="color:var(--green);font-weight:600">+50 xp <span style="color:var(--muted)">2h ago</span></span></div>
+      <div style="display:flex;justify-content:space-between;padding:12px 0;border-bottom:1px solid var(--border);font-size:.85rem"><span>Unlocked badge: Eagle Eye</span><span style="color:var(--green);font-weight:600">+200 xp <span style="color:var(--muted)">yesterday</span></span></div>
+      <div style="display:flex;justify-content:space-between;padding:12px 0;font-size:.85rem"><span>Completed Social Decoy</span><span style="color:var(--green);font-weight:600">+150 xp <span style="color:var(--muted)">2d ago</span></span></div>
+    </div>
+  </div>
+  <div class="mobile-nav">
+    <div class="mobile-nav-inner">
+      <div class="mob-nav-item" onclick="goTo('dashboard')"><div class="mn-icon">🏠</div>Home</div>
+      <div class="mob-nav-item" onclick="goTo('path')"><div class="mn-icon">📖</div>Learn</div>
+      <div class="mob-nav-item" onclick="goTo('challenge')"><div class="mn-icon">▶</div>Play</div>
+      <div class="mob-nav-item" onclick="goTo('leaderboard')"><div class="mn-icon">🏆</div>Rank</div>
+      <div class="mob-nav-item active" onclick="goTo('profile')"><div class="mn-icon">👤</div>Profile</div>
+    </div>
+  </div>
+</div>
+
+<!-- ADMIN DASHBOARD -->
+<div class="screen" id="screen-admin">
+  <div class="admin-layout">
+    <div class="admin-sidebar">
+      <div class="brand"><div class="logo-icon" style="width:24px;height:24px;font-size:12px">🛡</div>CyberSafe</div>
+      <div class="sidebar-link active"><span class="icon">📊</span>Overview</div>
+      <div class="sidebar-link" onclick="goTo('feed')"><span class="icon">👥</span>Cohorts</div>
+      <div class="sidebar-link" onclick="goTo('feed')"><span class="icon">📚</span>Modules</div>
+      <div class="sidebar-link" onclick="goTo('path')"><span class="icon">📈</span>Analytics</div>
+      <div class="sidebar-link" onclick="goTo('profile')"><span class="icon">⚙</span>Settings</div>
+      <div style="margin-top:auto;padding:20px;">
+        <div style="font-size:.72rem;color:var(--muted);margin-bottom:12px">Deakin University<br>Admin Portal</div>
+        <div onclick="goTo('dashboard')" style="color:var(--green);font-size:.78rem;font-weight:600;cursor:pointer">← Back to App</div>
+      </div>
+    </div>
+    <div class="admin-content">
+      <h1>Cohort Overview — Deakin University</h1>
+      <div class="kpi-row">
+        <div class="kpi-card"><div class="kpi-label">ENROLLED USERS</div><div class="kpi-val">2,847</div></div>
+        <div class="kpi-card"><div class="kpi-label">AVG COMPLETION</div><div class="kpi-val" style="color:var(--green)">68%</div><div class="kpi-sub">↑ 4% this week</div></div>
+        <div class="kpi-card"><div class="kpi-label">ACTIVE COHORTS</div><div class="kpi-val">4</div></div>
+        <div class="kpi-card"><div class="kpi-label">THREATS SPOTTED</div><div class="kpi-val">94,200</div></div>
+      </div>
+      <div class="admin-grid">
+        <div class="admin-card">
+          <h3>Module Completion</h3>
+          <div class="module-row"><span class="name">Phishing</span><div class="bar-bg"><div class="bar" style="width:78%;background:var(--green)"></div></div><span class="pct">78%</span></div>
+          <div class="module-row"><span class="name">Passwords</span><div class="bar-bg"><div class="bar" style="width:65%;background:var(--blue)"></div></div><span class="pct">65%</span></div>
+          <div class="module-row"><span class="name">Privacy</span><div class="bar-bg"><div class="bar" style="width:54%;background:var(--blue)"></div></div><span class="pct">54%</span></div>
+          <div class="module-row"><span class="name">Social Eng.</span><div class="bar-bg"><div class="bar" style="width:41%;background:var(--orange)"></div></div><span class="pct">41%</span></div>
+          <div class="module-row"><span class="name">Identity Theft</span><div class="bar-bg"><div class="bar" style="width:60%;background:var(--blue)"></div></div><span class="pct">60%</span></div>
+          <div class="module-row"><span class="name">Malware</span><div class="bar-bg"><div class="bar" style="width:49%;background:var(--blue)"></div></div><span class="pct">49%</span></div>
+        </div>
+        <div class="admin-card">
+          <h3>Engagement</h3>
+          <div class="engagement-list">
+            <div class="eng-row"><span>Avg Session</span><span>8.2 min</span></div>
+            <div class="eng-row"><span>Weekly Active</span><span style="color:var(--green)">74%</span></div>
+            <div class="eng-row"><span>Avg Streak</span><span>6.3 days</span></div>
+          </div>
+          <div class="top-cohort">
+            <div class="label">TOP PERFORMING COHORT</div>
+            <div class="name">IT Security 2026</div>
+            <div class="pct">94%</div>
+            <div style="font-size:.78rem;color:var(--muted)">completion</div>
+          </div>
+        </div>
+      </div>
+      <div class="admin-card">
+        <div class="table-header"><h3 style="margin:0">Student Progress</h3><button class="btn-export">Export CSV</button></div>
+        <table class="data-table">
+          <thead><tr><th>STUDENT ID</th><th>MODULES</th><th>ACCURACY</th><th>LAST ACTIVE</th><th>STATUS</th></tr></thead>
+          <tbody>
+            <tr><td>STU-84219</td><td>32/38</td><td>96%</td><td>2h ago</td><td><span class="status-dot status-active"></span>Active</td></tr>
+            <tr><td>STU-84220</td><td>28/38</td><td>89%</td><td>1d ago</td><td><span class="status-dot status-active"></span>Active</td></tr>
+            <tr><td>STU-84221</td><td>10/38</td><td>62%</td><td>14d ago</td><td><span class="status-dot status-risk"></span>At Risk</td></tr>
+            <tr><td>STU-84222</td><td>24/38</td><td>91%</td><td>5h ago</td><td><span class="status-dot status-active"></span>Active</td></tr>
+            <tr><td>STU-84223</td><td>6/38</td><td>54%</td><td>21d ago</td><td><span class="status-dot status-risk"></span>At Risk</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+const screens = {
+  landing: 'screen-landing',
+  signup: 'screen-signup',
+  dashboard: 'screen-dashboard',
+  challenge: 'screen-challenge',
+  feed: 'screen-feed',
+  path: 'screen-path',
+  achievements: 'screen-achievements',
+  leaderboard: 'screen-leaderboard',
+  profile: 'screen-profile',
+  admin: 'screen-admin',
+};
+
+function goTo(name) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  const el = document.getElementById(screens[name]);
+  if (el) { el.classList.add('active'); el.scrollTop = 0; }
+  // reset challenge
+  if (name === 'challenge') {
+    document.getElementById('result-correct').classList.remove('show');
+    document.getElementById('result-wrong').classList.remove('show');
+    document.querySelectorAll('.verdict-btns button').forEach(b => b.disabled = false);
+    startTimer();
+  }
+}
+
+// Timer
+let timerInterval;
+function startTimer() {
+  clearInterval(timerInterval);
+  let secs = 105;
+  const el = document.getElementById('timer-val');
+  const badge = document.getElementById('timer-badge');
+  timerInterval = setInterval(() => {
+    secs--;
+    if (secs <= 0) { clearInterval(timerInterval); secs = 0; }
+    const m = Math.floor(secs/60).toString().padStart(2,'0');
+    const s = (secs%60).toString().padStart(2,'0');
+    el.textContent = m+':'+s;
+    badge.className = 'timer-badge' + (secs < 30 ? ' urgent' : '');
+  }, 1000);
+}
+
+function verdict(choice) {
+  clearInterval(timerInterval);
+  document.querySelectorAll('.verdict-btns button').forEach(b => b.disabled = true);
+  if (choice === 'threat') {
+    document.getElementById('result-correct').classList.add('show');
+  } else {
+    document.getElementById('result-wrong').classList.add('show');
+  }
+}
+
+// Tab interaction on leaderboard
+document.querySelectorAll('.lb-tab').forEach(t => {
+  t.addEventListener('click', () => {
+    document.querySelectorAll('.lb-tab').forEach(x => x.classList.remove('active'));
+    t.classList.add('active');
+  });
+});
+</script>
+</body>
+</html>
